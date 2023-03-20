@@ -1,0 +1,46 @@
+base: core20
+name: scrobbler-py
+version: 1.1.4
+summary: A command-line Last.fm scrobbler and a now-playing status updater
+description: |
+  Usage:
+
+  scrobbler-py add-user <user> --password=<password>  
+  scrobbler-py now-playing <user> <artist> <track>  
+  scrobbler-py scrobble <user> <artist> <track> <time>
+grade: stable
+confinement: strict
+
+apps:
+  scrobbler-py:
+    adapter: none
+    environment:
+      HOME: $SNAP_USER_COMMON
+      PATH: $SNAP/bin:$PATH
+      PYTHONPATH: $SNAP/lib/python3.8/site-packages
+    command: bin/scrobbler
+    plugs:
+    - network
+
+slots:
+  scrobbler-core20:
+    interface: content
+    content: plug20
+    read: [ / ]
+
+parts:
+  scrobbler:
+    source: https://github.com/hauzer/scrobbler.git
+    source-type: git
+    plugin: python
+    prime:
+    - bin/scrobbler
+    - lib/python*/site-packages
+    - -lib/python*/site-packages/*.dist-info
+# comm -13 <(python -v ../../../bin/scrobbler 2>&1 | sed -rn "s/^import '([^_.']+).*/\\1/p" | sort -u) <(find * -maxdepth 0 ! -name '*.dist-info' | sed 's/\.py$//')
+    - -lib/python*/site-packages/__pycache__
+    - -lib/python*/site-packages/distutils-precedence.pth
+    - -lib/python*/site-packages/pip
+    - -lib/python*/site-packages/pkg_resources
+    - -lib/python*/site-packages/setuptools
+    - -lib/python*/site-packages/wheel
